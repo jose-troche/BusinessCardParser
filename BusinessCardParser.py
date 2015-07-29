@@ -1,4 +1,4 @@
-import re
+import re, string
 
 class ContactInfo:
     def __init__(self, name=None, phone=None, email=None):
@@ -19,6 +19,7 @@ class BusinessCardParser:
     def __init__(self):
         # First and last names from:
         # https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1
+        # The first and last names are loaded into sets for super fast lookup of O(1)
         self.firstNames = self.loadFileIntoSet('firstNames.txt')
         self.lastNames = self.loadFileIntoSet('lastNames.txt')
         self.phoneRegEx = re.compile(
@@ -46,15 +47,37 @@ class BusinessCardParser:
         return ContactInfo(name, phone, email)
 
     def extractName(self, line):
-        words = line.split()
-        for i in xrange(len(words)-1):
-            word = words[i].lower()
-            nextWord = words[i+1].lower()
+        # Get lowercase words without punctuation
+        words = [word.strip(string.punctuation).lower() for word in line.split()]
+        lenWords = len(words)
+
+        # Need at least two words (one firstname, one lastname)
+        if lenWords < 2: 
+            return None
+
+        # Try findind firstname + lastname or lastname + firstname
+        for i in xrange(lenWords-1):
+            word = words[i]
+            nextWord = words[i+1]
             if word in self.firstNames and nextWord in self.lastNames:
                 return self.getCapitalizedName(word, nextWord)
 
             if word in self.lastNames and nextWord in self.firstNames:
                 return self.getCapitalizedName(nextWord, word)
+
+        # If first and last name are not found try findind just one
+        for i in xrange(lenWords):
+            if words[i] in self.firstNames: 
+                if i < lenWords-1: # Assume next is Last Name
+                    return self.getCapitalizedName(words[i], word[i+1])
+                else:
+                    return self.getCapitalizedName(words[i], words[i-1])
+
+            if words[i] in self.lastNames: 
+                if i > 0: # Assume prior is First Name
+                    return self.getCapitalizedName(words[i-1], words[i])
+                else:
+                    return self.getCapitalizedName(words[i+1], words[i])
 
         return None
 
@@ -81,5 +104,5 @@ class BusinessCardParser:
 cardParser = BusinessCardParser()
 print cardParser.extractPhone('Phone: (410)555-1234')
 print cardParser.extractEmail('Phone: (410)555-1234')
-print cardParser.extractName('This is haung lisa the Software dev')
+print cardParser.extractName('This is lisa haug the Software dev')
 print cardParser.extractEmail('Email: lisa.haung@foobartech.subdomain.io')

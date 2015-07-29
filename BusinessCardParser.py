@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import re, string
 
 class ContactInfo:
@@ -16,24 +18,35 @@ class ContactInfo:
         return self.email
 
 class BusinessCardParser:
+
+    ##########################################################################
+    # Constructor: Initializes sets and regular expressions used by the parser
+    ##########################################################################
     def __init__(self):
-        # First and last names from:
-        # https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1
-        # The first and last names are loaded into sets for super fast lookup of O(1)
+        # The first and last names are loaded into sets for super fast lookup O(1)
+        # (Files adapted from:
+        # https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1)
         self.firstNames = self.loadFileIntoSet('firstNames.txt')
         self.lastNames = self.loadFileIntoSet('lastNames.txt')
+        
+        # Fax reg ex is used to discard fax numbers
+        self.faxRegEx = re.compile(r'fax')
+
+        # Because of output format, numbers are assumed to be in groups of 3, 3 & 4
         self.phoneRegEx = re.compile(
-            r'\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})')
+            r'\(?([0-9]{3})\)?[-. ]?\(?([0-9]{3})\)?[-. ]?\(?([0-9]{4})\)?')
+        
         # Email regular expression from:
         #   http://www.w3.org/TR/html5/forms.html#valid-e-mail-address
         self.emailRegEx = re.compile(
             r'[a-zA-Z0-9.!#$%&\'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*')
 
-    # document is a list of strings
+    #########################################################################
+    # This is the main entry point an conforms to the
+    # interface IBusinessCardParser spec
+    # It traverses the document looking for the name, phone and email
+    #########################################################################
     def getContactInfo(self, document):
-        return parse(document)
-
-    def parse(document):
         for line in document:
             # We assume name, phone, and/or email may be on the same line
             name = extractName(line)
@@ -46,6 +59,26 @@ class BusinessCardParser:
             
         return ContactInfo(name, phone, email)
 
+    ########################################################
+    # Searches and extracts a valid phone from a string line
+    ########################################################
+    def extractPhone(self, line):
+        # Ignore lines that include Fax
+        if self.faxRegEx.search(line, re.IGNORECASE):
+            return None
+        found = self.phoneRegEx.search(line)
+        return '{0}-{1}-{2}'.format(found.group(1), found.group(2), found.group(3)) if found else None
+
+    ########################################################
+    # Searches and extracts a valid email from a string line
+    ########################################################
+    def extractEmail(self, line):
+        found = self.emailRegEx.search(line)
+        return found.group(0) if found else None
+
+    #################################################
+    # Searches and extracts a name from a string line
+    #################################################
     def extractName(self, line):
         # Get lowercase words without punctuation
         words = [word.strip(string.punctuation).lower() for word in line.split()]
@@ -55,7 +88,7 @@ class BusinessCardParser:
         if lenWords < 2: 
             return None
 
-        # Try findind firstname + lastname or lastname + firstname
+        # Try finding firstname + lastname or lastname + firstname
         for i in xrange(lenWords-1):
             word = words[i]
             nextWord = words[i+1]
@@ -65,7 +98,7 @@ class BusinessCardParser:
             if word in self.lastNames and nextWord in self.firstNames:
                 return self.getCapitalizedName(nextWord, word)
 
-        # If first and last name are not found try findind just one
+        # If first and last name are not found try finding just one
         for i in xrange(lenWords):
             if words[i] in self.firstNames: 
                 if i < lenWords-1: # Assume next is Last Name
@@ -81,16 +114,9 @@ class BusinessCardParser:
 
         return None
 
+    # Format the name according to specs
     def getCapitalizedName(self, firstName, lastName):
-        return firstName.capitalize() + ' ' + lastName.capitalize()
-
-    def extractPhone(self, line):
-        found = self.phoneRegEx.search(line)
-        return '{0}-{1}-{2}'.format(found.group(1), found.group(2), found.group(3)) if found else None
-
-    def extractEmail(self, line):
-        found = self.emailRegEx.search(line)
-        return found.group(0) if found else None
+        return (firstName + ' ' + lastName).title()
 
     # Load words of a file into a set
     def loadFileIntoSet(self, filename):
@@ -98,11 +124,12 @@ class BusinessCardParser:
         with open(filename, 'r') as f:
             for item in f: # read one line at a time
                 if item:
-                    itemSet.add(item.strip()) # Strip new lines
+                    itemSet.add(item.strip()) # Add into set stripping LF/CR
         return itemSet
 
-cardParser = BusinessCardParser()
-print cardParser.extractPhone('Phone: (410)555-1234')
-print cardParser.extractEmail('Phone: (410)555-1234')
-print cardParser.extractName('This is lisa haug the Software dev')
-print cardParser.extractEmail('Email: lisa.haung@foobartech.subdomain.io')
+if __name__ == '__main__':
+    cardParser = BusinessCardParser()
+    print cardParser.extractPhone('Phone: (410)555-1234')
+    print cardParser.extractEmail('Phone: (410)555-1234')
+    print cardParser.extractName('This is lisa haug the Software dev')
+    print cardParser.extractEmail('Email: lisa.haung@foobartech.subdomain.io')

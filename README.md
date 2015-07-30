@@ -1,6 +1,9 @@
 # Business Card Parser
 
-Files included:
+## Prerequisites
+* Python 2.7 (This will not work on Python 3). Tested on Windows and Mac. Will probably work with no problems in Linux.
+
+## Files Description
 
 * BusinessCardParser.py: The main class. It has the logic to parse a document and extract its information (name, phone & email). It reads from standard input and outputs the extracted information. To execute: 
 ```

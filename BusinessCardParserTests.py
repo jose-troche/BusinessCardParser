@@ -7,6 +7,10 @@ class BusinessCardParserTests(unittest.TestCase):
     def setUp(self):
         self.parser = BusinessCardParser()
 
+    ########################
+    # Unit Tests
+    ########################
+
     ## Email
     def testExtractEmailSorroundedByText(self):
         self.assertEqual(
@@ -110,6 +114,53 @@ class BusinessCardParserTests(unittest.TestCase):
         self.assertIsNone(self.parser.extractName('123-456-7890'))
         self.assertIsNone(self.parser.extractName('joe.doe@email'))
 
+
+    ########################
+    # Integration Tests
+    ########################
+    def testCard1(self):
+        card = """
+            ASYMMETRIK LTD
+            Mike Smith
+            Senior Software Engineer
+            (410)555-1234
+            msmith@asymmetrik.com
+        """
+        self._checkResults(card, 'Mike Smith', '410-555-1234', 'msmith@asymmetrik.com')
+
+    def testCard2(self):
+        card = """
+            Foobar Technologies
+            Analytic Developer
+            Lisa Haung
+            1234 Sentry Road
+            Columbia, MD 12345
+            Phone: 410-555-1234
+            Fax: 410-555-4321
+            lisa.haung@foobartech.com
+        """
+        self._checkResults(card, 'Lisa Haung', '410-555-1234', 'lisa.haung@foobartech.com')
+
+    def testCard3(self):
+        card = """
+            Arthur Wilson
+            Software Engineer
+            Decision & Security Technologies
+            ABC Technologies
+            123 North 11th Street
+            Suite 229
+            Arlington, VA 22209
+            Tel: 703-555-1259
+            Fax: 703-555-1200
+            awilson@abctech.com
+        """
+        self._checkResults(card, 'Arthur Wilson', '703-555-1259', 'awilson@abctech.com')
+
+    def _checkResults(self, card, expectedName, expectedPhone, expectedEmail):
+        contact = self.parser.getContactInfo(card.split('\n'))
+        self.assertEqual(contact.getName(), expectedName)
+        self.assertEqual(contact.getPhoneNumber(), expectedPhone)
+        self.assertEqual(contact.getEmailAddress(), expectedEmail)
 
 
 if __name__ == '__main__':

@@ -12,7 +12,7 @@ class ContactInfo:
     def getName(self):
         return self.name
 
-    def getgetPhoneNumber(self):
+    def getPhoneNumber(self):
         return self.phone
 
     def getEmailAddress(self):

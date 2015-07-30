@@ -74,20 +74,39 @@ class BusinessCardParserTests(unittest.TestCase):
         self.assertEqual(self.parser.extractName('Name: Doe, Joe (lastname, firstname)'),
             'Joe Doe')
 
-    def testExtractNameInferredLastname(self):
+    def testExtractNameInferredLastName(self):
         self.assertEqual(self.parser.extractName('Joe noname'),
             'Joe Noname')
 
-    def testExtractNameFoundPairsHavePriority(self):
+    def testExtractNameCombinationHasPriority(self):
         self.assertEqual(self.parser.extractName('Joe noname Doe Joe'),
             'Joe Doe')
+        self.assertEqual(self.parser.extractName('Joe noname Joe Doe'),
+            'Joe Doe')
 
+    def testExtractNameFirstNameAsLastWord(self):
+        self.assertEqual(self.parser.extractName('Name: noname Joe'),
+            'Joe Noname')
 
+    def testExtractNameLastNameAsLastWord(self):
+        self.assertEqual(self.parser.extractName('Name: noname Doe'),
+            'Noname Doe')
 
+    def testExtractNameLastNameAsFirstWord(self):
+        self.assertEqual(self.parser.extractName('Doe noname is here'),
+            'Noname Doe')
+
+    def testExtractNameInferredFirstName(self):
+        self.assertEqual(self.parser.extractName('Name: noname Doe'),
+            'Noname Doe')
+
+    def testExtractNameSingleWord(self):
+        self.assertIsNone(self.parser.extractName('Joe'))
+        self.assertIsNone(self.parser.extractName('Doe'))
 
     def testExtractNameNoName(self):
         self.assertIsNone(self.parser.extractName('Title Software Engineer'))
-        self.assertIsNone(self.parser.extractName('Assymetrik Company'))
+        self.assertIsNone(self.parser.extractName('ACME Company'))
         self.assertIsNone(self.parser.extractName('123-456-7890'))
         self.assertIsNone(self.parser.extractName('joe.doe@email'))
 

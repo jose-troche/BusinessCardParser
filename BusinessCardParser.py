@@ -4,8 +4,8 @@ import re, string
 from ContactInfo import ContactInfo
 
 ##########################################################
-# BusinessCardParser: It has the logic to parse a
-# documnet and extract name, phone and email from it
+# BusinessCardParser class: It has the logic to parse a
+# document and extract name, phone and email from it
 # The main class of the solution. 
 ##########################################################
 class BusinessCardParser:
@@ -36,6 +36,8 @@ class BusinessCardParser:
     # This is the main entry point an conforms to the
     # interface IBusinessCardParser from the spec
     # It traverses the document looking for the name, phone and email
+    # document is expected to be an iterable that returns string lines
+    # e.i. a list of lines, a file handler, etc
     #########################################################################
     def getContactInfo(self, document):
         for line in document:
@@ -75,10 +77,10 @@ class BusinessCardParser:
     def extractName(self, line):
         # Get a list of lowercased words without punctuation
         words = [word.strip(string.punctuation).lower() for word in line.split()]
-        lenWords = len(words)
+        wordsCount = len(words)
 
         # Need at least two words (one firstname, one lastname)
-        if lenWords < 2: 
+        if wordsCount < 2: 
             return None
 
         name = None
@@ -91,9 +93,9 @@ class BusinessCardParser:
         # If only one is found, assume the next/previous word is the other one
         # and cache the result. If a combination is found later, that one has
         # priority, otherwise return the cached name. at the end.
-        for i in xrange(lenWords):
+        for i in xrange(wordsCount):
             if words[i] in self.firstNames: # Current word is a firstname
-                if i < lenWords-1:
+                if i < wordsCount-1:
                     # Next word is possibly a lastname
                     name = self._formatName(words[i], words[i+1])
                     if words[i+1] in self.lastNames: # If found as lastname, return
@@ -101,7 +103,7 @@ class BusinessCardParser:
                 else: # At last word, then the previous word should be a lastname
                     return self._formatName(words[i], words[i-1])
             elif words[i] in self.lastNames: # Current word is a lastname
-                if i < lenWords-1:
+                if i < wordsCount-1:
                     if words[i+1] in self.firstNames: # If next word is firstname, return
                         return self._formatName(words[i+1], words[i])
                     else: 

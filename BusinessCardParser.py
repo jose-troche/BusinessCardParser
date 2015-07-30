@@ -2,21 +2,11 @@
 
 import re, string
 
-class ContactInfo:
-    def __init__(self, name=None, phone=None, email=None):
-        self.name = name
-        self.phone = phone
-        self.email = email
-
-    def getName(self):
-        return self.name
-
-    def getgetPhoneNumber(self):
-        return self.phone
-
-    def getEmailAddress(self):
-        return self.email
-
+##########################################################
+# BusinessCardParser: It has the logic to parse a
+# documnet and extract name, phone and email from it
+# The main class of the solution. 
+##########################################################
 class BusinessCardParser:
 
     ##########################################################################
@@ -43,7 +33,7 @@ class BusinessCardParser:
 
     #########################################################################
     # This is the main entry point an conforms to the
-    # interface IBusinessCardParser spec
+    # interface IBusinessCardParser from the spec
     # It traverses the document looking for the name, phone and email
     #########################################################################
     def getContactInfo(self, document):
@@ -118,7 +108,7 @@ class BusinessCardParser:
     def getCapitalizedName(self, firstName, lastName):
         return (firstName + ' ' + lastName).title()
 
-    # Load words of a file into a set
+    # Load words of a file into a set for fast look ups
     def loadFileIntoSet(self, filename):
         itemSet = set()
         with open(filename, 'r') as f:
@@ -127,9 +117,36 @@ class BusinessCardParser:
                     itemSet.add(item.strip()) # Add into set stripping LF/CR
         return itemSet
 
+##########################################################
+# A simple ContactInfo class that complies with the specs
+# It holds the a Contact's info (name, phone, email).
+# This class can go on its own file, but was included here
+# for convenience.
+##########################################################
+class ContactInfo:
+    def __init__(self, name=None, phone=None, email=None):
+        self.name = name
+        self.phone = phone
+        self.email = email
+
+    def getName(self):
+        return self.name
+
+    def getgetPhoneNumber(self):
+        return self.phone
+
+    def getEmailAddress(self):
+        return self.email
+
+    # The default way an instance of this class is printed
+    def __str__(self):
+        return "Name: {}\nPhone: {}\nEmail: {}".format(
+            self.name, self.phone, self.email)
+
 if __name__ == '__main__':
     cardParser = BusinessCardParser()
     print cardParser.extractPhone('Phone: (410)555-1234')
     print cardParser.extractEmail('Phone: (410)555-1234')
     print cardParser.extractName('This is lisa haug the Software dev')
     print cardParser.extractEmail('Email: lisa.haung@foobartech.subdomain.io')
+    print ContactInfo('Jose', '123-456-7890', 'j@email.com')

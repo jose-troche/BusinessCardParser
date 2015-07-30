@@ -5,8 +5,20 @@ from ContactInfo import ContactInfo
 
 ##########################################################
 # BusinessCardParser class: It has the logic to parse a
-# document and extract name, phone and email from it
-# The main class of the solution. 
+# document and extract name, phone and email from it.
+# This is the main class of the solution.
+#
+# To execute from command line:
+#
+# python BusinessCardParser.py < Card.txt
+#
+# The Card.txt has the input resulting from OCR
+# The output is the information extracted
+# i.e. name, phone & email.
+#
+# However this class can be integrated with other Python
+# code and classes. See, for instance, the tests
+# BusinessCardParserTests.py
 ##########################################################
 class BusinessCardParser:
 
@@ -138,6 +150,8 @@ class BusinessCardParser:
                     itemSet.add(item.strip()) # Add into set stripping LF/CR
         return itemSet
 
+# When invoked from command line, the input comes from standard input. Ex:
+# python BusinessCardParser.py < Card.txt
 if __name__ == '__main__':
     import sys
     print BusinessCardParser().getContactInfo(sys.stdin)

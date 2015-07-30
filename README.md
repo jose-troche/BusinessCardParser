@@ -24,4 +24,4 @@ python BusinessCardParserTests.py
 
 * lastNames.txt: A list of common Last Names
 
-Note: The first and last names were obtained from https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1 and then adapted
+Note: The first and last names were obtained from https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1 and then adapted.

@@ -17,8 +17,8 @@ class BusinessCardParser:
         # The first and last names are loaded into sets for super fast lookup O(1)
         # (Files adapted from:
         # https://www.sajari.com/public-data?amp;q.sl=1&q.id=d48du3lo8bldmqod&q.sl=1)
-        self.firstNames = self.loadFileIntoSet('firstNames.txt')
-        self.lastNames = self.loadFileIntoSet('lastNames.txt')
+        self.firstNames = self._loadFileIntoSet('firstNames.txt')
+        self.lastNames = self._loadFileIntoSet('lastNames.txt')
         
         # Fax reg ex is used to discard fax numbers
         self.faxRegEx = re.compile(r'fax')
@@ -85,36 +85,43 @@ class BusinessCardParser:
 
         name = None
 
-        # Scan for names
+        ### Scan for names ###
+        # General idea: There is a dictionary of common first and last names.
+        # Search for a first name (present in the firstNames dictionary/set) 
+        # immediately followed by a last name (present in the lastNames 
+        # dictionary/set) or a last name immediately followed by a first name.
+        # If only one is found, assume the next/previous word is the other one
+        # and cache the result. If later a combination is found, that one has
+        # priority, otherwise return the the cached name
         for i in xrange(lenWords):
             if words[i] in self.firstNames: # Current word is a firstname
                 if i < lenWords-1:
                     # Next word is possibly a lastname
-                    name = self.getCapitalizedName(words[i], words[i+1])
+                    name = self._formatName(words[i], words[i+1])
                     if words[i+1] in self.lastNames: # If found as lastname, return
                         return name
                 else: # At last word, then the previous word should be a lastname
-                    return self.getCapitalizedName(words[i], words[i-1])
+                    return self._formatName(words[i], words[i-1])
             elif words[i] in self.lastNames: # Current word is a lastname
                 if i < lenWords-1:
-                    if words[i+1] in self.firstNames: # If next word is firstname return
-                        return self.getCapitalizedName(words[i+1], words[i])
+                    if words[i+1] in self.firstNames: # If next word is firstname, return
+                        return self._formatName(words[i+1], words[i])
                     else: 
                         if i > 0: # We assume that previous word was an non-recognized firstname
-                            name = self.getCapitalizedName(words[i-1], words[i])
+                            name = self._formatName(words[i-1], words[i])
                         else: # First word, then assume next is an non-recognized firstname
-                            name = self.getCapitalizedName(words[i+1], words[i])
+                            name = self._formatName(words[i+1], words[i])
                 else: # At last word, then the previous word should be a firstname
-                    return self.getCapitalizedName(words[i-1], words[i])
+                    return self._formatName(words[i-1], words[i])
 
         return name
 
-    # Format the name according to specs
-    def getCapitalizedName(self, firstName, lastName):
+    # Private method to format the name according to specs
+    def _formatName(self, firstName, lastName):
         return (firstName + ' ' + lastName).title()
 
-    # Load words of a file into a set for fast look ups
-    def loadFileIntoSet(self, filename):
+    # Private method to load words of a file into a set for fast O(1) look ups
+    def _loadFileIntoSet(self, filename):
         itemSet = set()
         with open(filename, 'r') as f:
             for item in f: # read one line at a time

@@ -66,11 +66,15 @@ class BusinessCardParser:
         found = self.emailRegEx.search(line)
         return found.group(0) if found else None
 
-    #################################################
+    #####################################################
     # Searches and extracts a name from a string line
-    #################################################
+    # The parser looks up dictionaries of first
+    # and last names
+    # We assume a name is firstname+lastname or
+    # lastname+firstname (no middle name nor initial)
+    #####################################################
     def extractName(self, line):
-        # Get lowercase words without punctuation
+        # Get a list of lowercased words without punctuation
         words = [word.strip(string.punctuation).lower() for word in line.split()]
         lenWords = len(words)
 
@@ -78,31 +82,31 @@ class BusinessCardParser:
         if lenWords < 2: 
             return None
 
-        # Try finding firstname + lastname or lastname + firstname
-        for i in xrange(lenWords-1):
-            word = words[i]
-            nextWord = words[i+1]
-            if word in self.firstNames and nextWord in self.lastNames:
-                return self.getCapitalizedName(word, nextWord)
+        name = None
 
-            if word in self.lastNames and nextWord in self.firstNames:
-                return self.getCapitalizedName(nextWord, word)
-
-        # If first and last name are not found try finding just one
+        # Scan for names
         for i in xrange(lenWords):
-            if words[i] in self.firstNames: 
-                if i < lenWords-1: # Assume next is Last Name
-                    return self.getCapitalizedName(words[i], word[i+1])
-                else:
+            if words[i] in self.firstNames: # Current word is a firstname
+                if i < lenWords-1:
+                    # Next word is possibly a lastname
+                    name = self.getCapitalizedName(words[i], words[i+1])
+                    if words[i+1] in self.lastNames: # If found as lastname, return
+                        return name
+                else: # At last word, then the previous word should be a lastname
                     return self.getCapitalizedName(words[i], words[i-1])
-
-            if words[i] in self.lastNames: 
-                if i > 0: # Assume prior is First Name
+            elif words[i] in self.lastNames: # Current word is a lastname
+                if i < lenWords-1:
+                    if words[i+1] in self.firstNames: # If next word is firstname return
+                        return self.getCapitalizedName(words[i+1], words[i])
+                    else: 
+                        if i > 0: # We assume that previous word was an non-recognized firstname
+                            name = self.getCapitalizedName(words[i-1], words[i])
+                        else: # First word, then assume next is an non-recognized firstname
+                            name = self.getCapitalizedName(words[i+1], words[i])
+                else: # At last word, then the previous word should be a firstname
                     return self.getCapitalizedName(words[i-1], words[i])
-                else:
-                    return self.getCapitalizedName(words[i+1], words[i])
 
-        return None
+        return name
 
     # Format the name according to specs
     def getCapitalizedName(self, firstName, lastName):

@@ -65,5 +65,33 @@ class BusinessCardParserTests(unittest.TestCase):
         self.assertIsNone(self.parser.extractEmail('Fax: 123-456-7890'))
         self.assertIsNone(self.parser.extractEmail('123-456-7890 (Fax)'))
 
+    ## Names
+    def testExtractNameFirstNameFirst(self):
+        self.assertEqual(self.parser.extractName('Here\'s a name: Joe Doe'),
+            'Joe Doe')
+
+    def testExtractNameLastNameFirst(self):
+        self.assertEqual(self.parser.extractName('Name: Doe, Joe (lastname, firstname)'),
+            'Joe Doe')
+
+    def testExtractNameInferredLastname(self):
+        self.assertEqual(self.parser.extractName('Joe noname'),
+            'Joe Noname')
+
+    def testExtractNameFoundPairsHavePriority(self):
+        self.assertEqual(self.parser.extractName('Joe noname Doe Joe'),
+            'Joe Doe')
+
+
+
+
+    def testExtractNameNoName(self):
+        self.assertIsNone(self.parser.extractName('Title Software Engineer'))
+        self.assertIsNone(self.parser.extractName('Assymetrik Company'))
+        self.assertIsNone(self.parser.extractName('123-456-7890'))
+        self.assertIsNone(self.parser.extractName('joe.doe@email'))
+
+
+
 if __name__ == '__main__':
     unittest.main()

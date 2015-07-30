@@ -69,9 +69,7 @@ class BusinessCardParser:
 
     #####################################################
     # Searches and extracts a name from a string line
-    # The parser looks up dictionaries of first
-    # and last names
-    # We assume a name is firstname+lastname or
+    # Assumption: a name is firstname+lastname or
     # lastname+firstname (no middle name nor initial)
     #####################################################
     def extractName(self, line):
@@ -91,8 +89,8 @@ class BusinessCardParser:
         # immediately followed by a last name (present in the lastNames 
         # dictionary/set) or a last name immediately followed by a first name.
         # If only one is found, assume the next/previous word is the other one
-        # and cache the result. If later a combination is found, that one has
-        # priority, otherwise return the the cached name
+        # and cache the result. If a combination is found later, that one has
+        # priority, otherwise return the cached name. at the end.
         for i in xrange(lenWords):
             if words[i] in self.firstNames: # Current word is a firstname
                 if i < lenWords-1:

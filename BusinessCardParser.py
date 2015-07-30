@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import re, string
+from ContactInfo import ContactInfo
 
 ##########################################################
 # BusinessCardParser: It has the logic to parse a
@@ -120,32 +121,6 @@ class BusinessCardParser:
                 if item:
                     itemSet.add(item.strip()) # Add into set stripping LF/CR
         return itemSet
-
-##########################################################
-# A simple ContactInfo class that complies with the specs
-# It holds the a Contact's info (name, phone, email).
-# This class can go on its own file, but was included here
-# for convenience.
-##########################################################
-class ContactInfo:
-    def __init__(self, name=None, phone=None, email=None):
-        self.name = name
-        self.phone = phone
-        self.email = email
-
-    def getName(self):
-        return self.name
-
-    def getgetPhoneNumber(self):
-        return self.phone
-
-    def getEmailAddress(self):
-        return self.email
-
-    # The default way an instance of this class is printed
-    def __str__(self):
-        return "Name: {}\nPhone: {}\nEmail: {}".format(
-            self.name, self.phone, self.email)
 
 if __name__ == '__main__':
     cardParser = BusinessCardParser()

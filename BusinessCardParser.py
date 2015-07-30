@@ -40,11 +40,20 @@ class BusinessCardParser:
     # e.i. a list of lines, a file handler, etc
     #########################################################################
     def getContactInfo(self, document):
+        name = None
+        phone = None
+        email = None
+
         for line in document:
-            # We assume name, phone, and/or email may be on the same line
-            name = extractName(line)
-            phone = extractPhone(line)
-            email = extractEmail(line)
+            # Assumption: name, phone, and/or email may be on the same line
+            if name is None:
+                name = self.extractName(line)
+
+            if phone is None:
+                phone = self.extractPhone(line)
+
+            if email is None:
+                email = self.extractEmail(line)
 
             # No need to look further if we have them all
             if name and phone and email:
@@ -130,9 +139,5 @@ class BusinessCardParser:
         return itemSet
 
 if __name__ == '__main__':
-    cardParser = BusinessCardParser()
-    print cardParser.extractPhone('Phone: (410)555-1234')
-    print cardParser.extractEmail('Phone: (410)555-1234')
-    print cardParser.extractName('This is lisa haug the Software dev')
-    print cardParser.extractEmail('Email: lisa.haung@foobartech.subdomain.io')
-    print ContactInfo('Jose', '123-456-7890', 'j@email.com')
+    import sys
+    print BusinessCardParser().getContactInfo(sys.stdin)
